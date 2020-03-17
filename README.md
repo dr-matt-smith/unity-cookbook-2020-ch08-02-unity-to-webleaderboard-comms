@@ -1,1 +1,1 @@
-# unity-cookbook-2020-ch11-02-unity-to-webleaderboard-comms
+# unity-cookbook-2020-ch08-02-unity-to-webleaderboard-comms
