@@ -1,17 +1,23 @@
 // file: WebLeaderBoard.cs
+// based on Unity example at:
+// https://docs.unity3d.com/2020.1/Documentation/ScriptReference/Networking.UnityWebRequest.Get.html
+
 using UnityEngine;
 using System.Collections;
 using System;
+using UnityEngine.Networking;
 
 using UnityEngine.UI;
 
-public class WebLeaderBoard : MonoBehaviour {
+
+public class WebLeaderBoard : MonoBehaviour
+{
 	public Text ui_lastURL;
 	public Text ui_lastURLValue;
 	public Text ui_textFile;
 
 	public string leaderBoardURL = "http://localhost/leaderboard/index.php";
-	private string url = "(empty)";
+	private string uri = "(empty)";
 	private string action;
 	private string parameters;
 	private string textFileContents = "(still loading file ...)";
@@ -21,7 +27,7 @@ public class WebLeaderBoard : MonoBehaviour {
 	}
 
 	private void UpdateUI() {
-		ui_lastURL.text = "LAST URL = " + url;
+		ui_lastURL.text = "LAST URL = " + uri;
 		ui_lastURLValue.text = StringToInt(textFileContents);
 		ui_textFile.text = MakePretty(textFileContents);
 	}
@@ -64,19 +70,46 @@ public class WebLeaderBoard : MonoBehaviour {
 		}
 		catch(System.Exception e){
 			intMessage += "(not an integer) ";
-//			print (e);
+			print (e);
 		}	
 		return intMessage;
 	}
+	private IEnumerator LoadWWW(){
+		uri = leaderBoardURL + "?action=" + action + parameters;
+		
+		using (UnityWebRequest webRequest = UnityWebRequest.Get(uri))
+		{
+			webRequest.certificateHandler = new CertHandler();
+
+			// Request and wait for the desired page.
+			yield return webRequest.SendWebRequest();
+
+			string[] pages = uri.Split('/');
+			int page = pages.Length - 1;
+
+			switch (webRequest.result)
+			{
+				case UnityWebRequest.Result.ConnectionError:
+				case UnityWebRequest.Result.DataProcessingError:
+					Debug.LogError(pages[page] + ": Error: " + webRequest.error);
+					ui_lastURLValue.text = "ERROR: " + webRequest.error;
+					break;
+				case UnityWebRequest.Result.ProtocolError:
+					Debug.LogError(pages[page] + ": HTTP Error: " + webRequest.error);
+					ui_lastURLValue.text = "ERROR: " + webRequest.error;
+					break;
+				case UnityWebRequest.Result.Success:
+					Debug.Log(pages[page] + ":\nReceived: " + webRequest.downloadHandler.text);
+					textFileContents = webRequest.downloadHandler.text;
+					UpdateUI();
+					break;
+			}
+		}
+		}
 
 	
-	private IEnumerator LoadWWW(){
-		url = leaderBoardURL + "?action=" + action + parameters;
-		WWW www = new WWW (url);
-		yield return www;
-		textFileContents = www.text;
-		UpdateUI();
-	}
+
+
 	
 	//
 	// public button Methods
