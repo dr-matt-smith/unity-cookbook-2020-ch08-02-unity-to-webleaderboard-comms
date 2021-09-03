@@ -70,7 +70,7 @@ public class WebLeaderBoard : MonoBehaviour
 		}
 		catch(System.Exception e){
 			intMessage += "(not an integer) ";
-			print (e);
+			print (intMessage);
 		}	
 		return intMessage;
 	}
