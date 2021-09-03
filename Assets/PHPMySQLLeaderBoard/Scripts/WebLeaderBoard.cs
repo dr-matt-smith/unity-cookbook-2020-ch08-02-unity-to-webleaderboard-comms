@@ -68,7 +68,7 @@ public class WebLeaderBoard : MonoBehaviour
 			int integerReturned = Int32.Parse(s);
 			intMessage += integerReturned;
 		}
-		catch(System.Exception e){
+		catch(System.Exception){
 			intMessage += "(not an integer) ";
 			print (intMessage);
 		}	
